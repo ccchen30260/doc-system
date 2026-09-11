@@ -13,6 +13,29 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
+  <!-- 🔒 全螢幕登入遮罩視窗 -->
+  <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 space-y-6 text-center">
+      <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">雲端文件管理系統</h2>
+        <p class="text-sm text-slate-500 mt-1">請輸入管理員密碼以存取系統</p>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <input type="password" id="loginPassword" required placeholder="預設密碼：0000" class="w-full text-center tracking-widest text-lg border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> 登入系統
+        </button>
+      </form>
+      <div class="text-xs text-slate-400">預設密碼為 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">0000</code></div>
+    </div>
+  </div>
+
   <!-- 頁首 Header -->
   <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
@@ -20,13 +43,16 @@
         <i class="fa-solid fa-cloud text-2xl"></i>
         <h1 class="text-2xl font-bold tracking-wide">雲端文件管理系統</h1>
       </div>
-      <div class="flex items-center gap-3">
-        <button onclick="openCategoryModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-indigo-400 shadow-sm">
-          <i class="fa-solid fa-sliders"></i> 分類管理員
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <button onclick="openCategoryModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 border border-indigo-400 shadow-sm">
+          <i class="fa-solid fa-sliders"></i> 分類管理
         </button>
-        <div class="hidden sm:block text-xs bg-emerald-600 px-3 py-1.5 rounded-full text-white font-medium">
-          <i class="fa-solid fa-wifi mr-1"></i> Supabase 雲端同步中
-        </div>
+        <button onclick="openPasswordModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 border border-indigo-400 shadow-sm">
+          <i class="fa-solid fa-key"></i> 修改密碼
+        </button>
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-right-from-bracket"></i> 登出
+        </button>
       </div>
     </div>
   </header>
@@ -139,6 +165,40 @@
     </div>
   </div>
 
+  <!-- 🔑 修改密碼 Modal -->
+  <div id="passwordModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md mx-4 p-6 space-y-5">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-key text-indigo-600"></i> 修改管理員密碼
+        </h3>
+        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="changePasswordForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">舊密碼</label>
+          <input type="password" id="oldPassword" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">新密碼</label>
+          <input type="password" id="newPassword" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">再次確認新密碼</label>
+          <input type="password" id="confirmPassword" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <div class="flex justify-end gap-2 border-t pt-3">
+          <button type="button" onclick="closePasswordModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">取消</button>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">更新密碼</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // -------------------------------------------------------------
     // 🔑 1. 填入您的 Supabase 設定資訊
@@ -151,6 +211,14 @@
     const BUCKET_NAME = 'doc-files';
 
     // --- DOM 元素 ---
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginForm = document.getElementById('loginForm');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginBtn = document.getElementById('loginBtn');
+
+    const passwordModal = document.getElementById('passwordModal');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+
     const docForm = document.getElementById('docForm');
     const docCategorySelect = document.getElementById('docCategorySelect');
     const docPhotoInput = document.getElementById('docPhoto');
@@ -170,7 +238,91 @@
     let allDocs = [];
     let allCategories = [];
 
-    // --- 初始化 ---
+    // --- 🔑 登入與權限控制 ---
+    async function checkAuth() {
+      const isLoggedIn = sessionStorage.getItem('doc_mgmt_logged_in');
+      if (isLoggedIn === 'true') {
+        loginOverlay.classList.add('hidden');
+        initApp();
+      } else {
+        loginOverlay.classList.remove('hidden');
+      }
+    }
+
+    async function fetchAdminPassword() {
+      const { data, error } = await db.from('system_settings').select('value').eq('key', 'admin_password').single();
+      if (error || !data) return '0000'; // 查無設定時預設 0000
+      return data.value;
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 驗證中...`;
+
+      const inputPwd = loginPassword.value.trim();
+      const actualPwd = await fetchAdminPassword();
+
+      if (inputPwd === actualPwd) {
+        sessionStorage.setItem('doc_mgmt_logged_in', 'true');
+        loginOverlay.classList.add('hidden');
+        loginPassword.value = '';
+        initApp();
+      } else {
+        alert('密碼錯誤，請重新輸入！');
+      }
+
+      loginBtn.disabled = false;
+      loginBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> 登入系統`;
+    });
+
+    function logout() {
+      if (confirm('確定要登出系統嗎？')) {
+        sessionStorage.removeItem('doc_mgmt_logged_in');
+        loginOverlay.classList.remove('hidden');
+      }
+    }
+
+    // --- 🔑 修改密碼邏輯 ---
+    function openPasswordModal() { passwordModal.classList.remove('hidden'); }
+    function closePasswordModal() { 
+      changePasswordForm.reset();
+      passwordModal.classList.add('hidden'); 
+    }
+
+    changePasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const oldPwd = document.getElementById('oldPassword').value.trim();
+      const newPwd = document.getElementById('newPassword').value.trim();
+      const confirmPwd = document.getElementById('confirmPassword').value.trim();
+
+      const actualPwd = await fetchAdminPassword();
+
+      if (oldPwd !== actualPwd) {
+        alert('舊密碼不正確！');
+        return;
+      }
+
+      if (newPwd !== confirmPwd) {
+        alert('兩次輸入的新密碼不一致！');
+        return;
+      }
+
+      if (newPwd.length < 4) {
+        alert('新密碼長度建議至少 4 個字元！');
+        return;
+      }
+
+      const { error } = await db.from('system_settings').update({ value: newPwd }).eq('key', 'admin_password');
+      if (error) {
+        alert('密碼修改失敗：' + error.message);
+      } else {
+        alert('🎉 密碼修改成功！請牢記您的新密碼。');
+        closePasswordModal();
+      }
+    });
+
+    // --- 應用程式初始化 ---
     async function initApp() {
       await loadCategories();
       await loadAndRenderDocs();
@@ -261,7 +413,6 @@
       const { error } = await db.from('categories').update({ name: trimmedName }).eq('id', id);
       if (error) { alert('更新失敗！'); return; }
 
-      // 同步更新文件資料表
       await db.from('documents').update({ category: trimmedName }).eq('category', oldName);
       await loadCategories();
       await loadAndRenderDocs();
@@ -294,7 +445,6 @@
       const photoFile = docPhotoInput.files[0];
       const attachmentFile = document.getElementById('docFile').files[0];
 
-      // 按鈕狀態變更
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 上傳中，請稍候...`;
 
@@ -520,7 +670,8 @@
     searchInput.addEventListener('input', renderDocs);
     filterCategory.addEventListener('change', renderDocs);
 
-    initApp();
+    // 啟動身分驗證檢查
+    checkAuth();
   </script>
 </body>
 </html>
